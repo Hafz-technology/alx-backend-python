@@ -48,7 +48,7 @@ def paginate_users(page_size, offset):
         cursor = connection.cursor(dictionary=True)
         # Use LIMIT and OFFSET to fetch a specific page
         # Updated to use SELECT * as per the objective's example
-        query = f"SELECT * FROM {TABLE_NAME} LIMIT {page_size} OFFSET {offset}"
+        query = f"SELECT * FROM user_data LIMIT {page_size} OFFSET {offset}"
         cursor.execute(query)
         rows = cursor.fetchall() # Fetch all rows for the current page
     except mysql.connector.Error as err:
