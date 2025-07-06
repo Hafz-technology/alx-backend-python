@@ -36,7 +36,7 @@ def stream_users_in_batches(batch_size):
         # with yield, fetching in chunks with fetchmany is more appropriate.
         # dictionary=True ensures rows are returned as dictionaries.
         cursor = connection.cursor(dictionary=True)
-        query = f"SELECT user_id, name, email, age FROM {TABLE_NAME}"
+        query = f"SELECT user_id, name, email, age FROM user_data"
         cursor.execute(query)
 
         while True:
