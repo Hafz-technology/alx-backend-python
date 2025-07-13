@@ -1,5 +1,6 @@
 import asyncio
 import time
+
 import aiosqlite
 
 
@@ -31,11 +32,12 @@ async def setup_database(db_name='users.db'):
 async def async_fetch_users(db_name='users.db'):
     """
     Asynchronously fetches all users from the database.
-    Simulates a network delay.
+    Simulates an I/O delay.
     """
     print("Starting async_fetch_users...")
     async with aiosqlite.connect(db_name) as db:
-        await asyncio.sleep(1) # Simulate I/O bound operation
+        # Simulate some asynchronous I/O work, e.g., network latency or complex query processing
+        await asyncio.sleep(1)
         cursor = await db.execute("SELECT id, name, age, email FROM users")
         users = await cursor.fetchall()
         await cursor.close()
@@ -45,11 +47,12 @@ async def async_fetch_users(db_name='users.db'):
 async def async_fetch_older_users(db_name='users.db', age_threshold=40):
     """
     Asynchronously fetches users older than a specified age from the database.
-    Simulates a network delay.
+    Simulates an I/O delay.
     """
     print(f"Starting async_fetch_older_users (age > {age_threshold})...")
     async with aiosqlite.connect(db_name) as db:
-        await asyncio.sleep(1.5) # Simulate a slightly longer I/O bound operation
+        # Simulate a slightly different asynchronous I/O work
+        await asyncio.sleep(1.5)
         cursor = await db.execute("SELECT id, name, age, email FROM users WHERE age > ?", (age_threshold,))
         older_users = await cursor.fetchall()
         await cursor.close()
@@ -67,6 +70,10 @@ async def fetch_concurrently():
     start_time = time.time()
 
     # Use asyncio.gather to run both functions concurrently
+    # This will run async_fetch_users and async_fetch_older_users
+    # simultaneously. The total time taken will be approximately the
+    # duration of the longest running coroutine (1.5 seconds in this case),
+    # not the sum of their individual delays (1s + 1.5s = 2.5s).
     all_users, older_users = await asyncio.gather(
         async_fetch_users(db_file),
         async_fetch_older_users(db_file)
@@ -79,10 +86,11 @@ async def fetch_concurrently():
     for user in all_users:
         print(user)
 
-    print(f"\nUsers Older Than 40:")
+    print(f"\nUsers Older Than {40}:")
     for user in older_users:
         print(user)
 
 if __name__ == "__main__":
-    # Run the main asynchronous function
+    # This is the entry point for running asynchronous code.
+    # It manages the asyncio event loop.
     asyncio.run(fetch_concurrently())
