@@ -98,3 +98,8 @@ if __name__ == "__main__":
         asyncio.run(fetch_concurrently())
     except Exception as e:
         print(f"An error occurred during concurrent execution: {e}")
+        
+        
+        
+        "async def async_fetch_users()"
+        "async def async_fetch_older_users()"
