@@ -1,7 +1,6 @@
 import asyncio
-import time
 import aiosqlite
-
+import time
 
 # Setup a dummy users.db for testing
 async def setup_database(db_name='users.db'):
