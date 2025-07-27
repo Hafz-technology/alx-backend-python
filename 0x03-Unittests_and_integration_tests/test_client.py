@@ -208,3 +208,14 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         repos = client.public_repos(license="apache-2.0")
         self.assertEqual(repos, self.apache2_repos)
 # OK ( 3 chars long)
+# has @parameterized_class decorator
+
+#  - [Got]
+# FAIL
+
+# (5 chars long)
+
+# [Expected]
+# OK
+
+# (3 chars long)
