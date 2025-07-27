@@ -30,8 +30,8 @@ class TestGithubOrgClient(unittest.TestCase):
         # Create an instance of GithubOrgClient
         client = GithubOrgClient(org_name)
 
-        # Call the org method
-        result = client.org()
+        # Access the org property (corrected from method call)
+        result = client.org
 
         # Assert that get_json was called exactly once with the expected URL
         expected_url = f"https://api.github.com/orgs/{org_name}"
@@ -39,3 +39,4 @@ class TestGithubOrgClient(unittest.TestCase):
 
         # Assert that the result is equal to the expected payload
         self.assertEqual(result, expected_payload)
+
