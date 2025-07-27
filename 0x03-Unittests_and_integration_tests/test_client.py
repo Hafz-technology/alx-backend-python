@@ -67,8 +67,9 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
         """
-        Tests that GithubOrgClient.public_repos returns the expected list of repositories
-        and that the underlying mocked calls are made correctly.
+        Tests that GithubOrgClient.public_repos returns the expected
+        list of repositories and that the underlying mocked calls are
+        made correctly.
         """
         # Define the payload that get_json should return for repos_payload
         mock_repos_payload = [
@@ -96,8 +97,9 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_public_repos_url.assert_called_once()
 
             # Assert that get_json was called once with the expected URL
-            mock_get_json.assert_called_once_with(expected_public_repos_url)
+            mock_get_json.assert_called_once_with(
+                expected_public_repos_url
+            )
 
             # Assert that the list of repos is as expected
             self.assertEqual(result, ["repo1", "repo2", "repo3"])
-
