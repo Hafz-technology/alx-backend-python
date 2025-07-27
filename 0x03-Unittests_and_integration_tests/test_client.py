@@ -182,7 +182,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos(self):
         """
-        Tests the public_repos method in an integration context.
+        Tests the public_repos method in an integration context without a license filter.
         Verifies that the list of public repositories matches the expected data.
         Also asserts that requests.get was called the correct number of times.
         """
@@ -194,3 +194,16 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(repos, self.expected_repos)
         # Assert that requests.get was called twice (once for org, once for repos)
         self.assertEqual(self.mock_get.call_count, 2)
+
+    def test_public_repos_with_license(self):
+        """
+        Tests the public_repos method in an integration context with a license filter.
+        Verifies that the list of public repositories with the specified license
+        matches the expected data.
+        """
+        # The org_name is derived from the org_payload in setUpClass
+        org_name = self.org_payload.get("login")
+
+        client = GithubOrgClient(org_name)
+        repos = client.public_repos(license="apache-2.0")
+        self.assertEqual(repos, self.apache2_repos)
