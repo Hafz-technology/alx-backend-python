@@ -81,12 +81,12 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.return_value = mock_repos_payload
 
         # Define the URL that _public_repos_url should return
-        expected_public_repos_url = "https://api.github.com/orgs/test_org/repos"
+        expect_public_repos_url = "https://api.github.com/orgs/test_org/repos"
 
         # Use patch as a context manager to mock GithubOrgClient.
         with patch('client.GithubOrgClient._public_repos_url',
                    new_callable=PropertyMock) as mock_public_repos_url:
-            mock_public_repos_url.return_value = expected_public_repos_url
+            mock_public_repos_url.return_value = expect_public_repos_url
 
             # Create an instance of GithubOrgClient
             client = GithubOrgClient("test_org")
@@ -99,7 +99,7 @@ class TestGithubOrgClient(unittest.TestCase):
 
             # Assert that get_json was called once with the expected URL
             mock_get_json.assert_called_once_with(
-                expected_public_repos_url
+                expect_public_repos_url
             )
 
             # Assert that the list of repos is as expected
