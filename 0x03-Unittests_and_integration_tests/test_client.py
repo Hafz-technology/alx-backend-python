@@ -60,7 +60,7 @@ class TestGithubOrgClient(unittest.TestCase):
             result = client._public_repos_url
 
             # Assert that GithubOrgClient.org was called
-            mock_org.assert_called_once()
+            mock.assert_called_once()
 
             # Assert that the result is the expected repos_url
             self.assertEqual(result, expected_org_payload["repos_url"])
