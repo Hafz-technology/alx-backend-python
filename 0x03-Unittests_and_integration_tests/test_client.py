@@ -184,14 +184,13 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """
         Tests the public_repos method in an integration context.
         Verifies that the list of public repositories matches the expected data.
+        Also asserts that requests.get was called the correct number of times.
         """
         # The org_name is derived from the org_payload in setUpClass
-        # For the current fixture structure, it's the 'login' key
-        # or can be extracted from the 'repos_url' in org_payload
-        # Let's use the 'login' from the org_payload for consistency
-        org_name = self.org_payload.get("login", "google") # Default to 'google' if not found
+        org_name = self.org_payload.get("login")
 
         client = GithubOrgClient(org_name)
         repos = client.public_repos()
         self.assertEqual(repos, self.expected_repos)
-
+        # Assert that requests.get was called twice (once for org, once for repos)
+        self.assertEqual(self.mock_get.call_count, 2)
