@@ -81,7 +81,7 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.return_value = mock_repos_payload
 
         # Define the URL that _public_repos_url should return
-        expected_public_repos_url = "https://api.github.com/orgs/test_org/repos"
+        expected_public_repos_url ="https://api.github.com/orgs/test_org/repos"
 
         # Use patch as a context manager to mock GithubOrgClient.
         with patch('client.GithubOrgClient._public_repos_url',
