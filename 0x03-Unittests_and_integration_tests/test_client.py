@@ -146,14 +146,12 @@ for org_info_part, repos_data in TEST_PAYLOAD:
     })
 
 
-
-
 #!/usr/bin/env python3
 """
 Integration tests for the GithubOrgClient.
 """
 import unittest
-from unittest.mock import patch, Mock, PropertyMock
+from unittest.mock import patch, Mock
 from parameterized import parameterized, parameterized_class
 import requests
 
@@ -1182,25 +1180,32 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         This method is called once for the entire test class.
         It patches `requests.get` to return predefined payloads based on the URL.
         """
+        # Define a custom MockResponse class to simulate requests.Response objects
+        class MockResponse:
+            def __init__(self, json_data, status_code=200):
+                self._json_data = json_data
+                self.status_code = status_code
+
+            def json(self):
+                return self._json_data
+
         # Define the side_effect function for requests.get
         # This function will be called whenever requests.get is invoked.
         def side_effect(url):
             """
             Custom side effect for requests.get mock.
-            Returns a Mock object whose .json() method returns the appropriate fixture.
+            Returns a MockResponse object whose .json() method returns the appropriate fixture.
             """
-            mock_response = Mock()
             if url == "https://api.github.com/orgs/google":
                 # If the URL is for the organization payload, return org_payload
-                mock_response.json.return_value = cls.org_payload
+                return MockResponse(cls.org_payload)
             elif url == cls.org_payload["repos_url"]:
                 # If the URL is for the repositories payload, return repos_payload
-                mock_response.json.return_value = cls.repos_payload
+                return MockResponse(cls.repos_payload)
             else:
                 # For any unexpected URL, return an empty mock or raise an error
                 # This helps in identifying unexpected network calls.
-                mock_response.json.return_value = {}
-            return mock_response
+                return MockResponse({}, 404) # Return a 404 for unexpected URLs
 
         # Start patching 'requests.get' globally.
         # The patcher is stored in a class variable so it can be stopped later.
