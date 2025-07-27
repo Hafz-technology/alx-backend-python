@@ -17,7 +17,10 @@ class TestGithubOrgClient(unittest.TestCase):
         ("abc", {"login": "abc"}),
     ])
     @patch('client.get_json')
-    def test_org(self, org_name: str, expected_payload: dict, mock_get_json: patch) -> None:
+    def test_org(self,
+                 org_name: str,
+                 expected_payload: dict,
+                 mock_get_json: patch) -> None:
         """
         Test that GithubOrgClient.org returns the correct value.
         Uses @patch as a decorator to mock get_json.
@@ -60,24 +63,26 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_repos_payload = [
             {"name": "alx-backend", "license": {"key": "mit"}},
             {"name": "holberton-web", "license": {"key": "apache-2.0"}},
-            {"name": "my-app", "license": None}, # No license
+            {"name": "my-app", "license": None},  # No license
             {"name": "old-project", "license": {"key": "gpl-3.0"}},
         ]
         mock_get_json.return_value = mock_repos_payload
 
         # Define the expected list of repo names
-        expected_repo_names = ["alx-backend", "holberton-web", "my-app", "old-project"]
+        expected_repo_names = ["alx-backend", "holberton-web",
+                               "my-app", "old-project"]
 
         # Define the URL that mock_public_repos_url will return
         mock_repos_url = "https://api.github.com/users/google/repos"
 
-        # Patch GithubOrgClient._public_repos_url as a property using a context manager
+        # Patch GithubOrgClient._public_repos_url as a property
+        # using a context manager
         with patch('client.GithubOrgClient._public_repos_url',
                    new_callable=PropertyMock,
                    return_value=mock_repos_url) as mock_public_repos_url:
-            
+
             client = GithubOrgClient("google")
-            
+
             # Call the public_repos method
             result_repos = client.public_repos()
 
