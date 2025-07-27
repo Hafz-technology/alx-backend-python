@@ -122,3 +122,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Add this entire REST_FRAMEWORK dictionary if it's not present,
+# or update it if it exists but is missing these specific settings.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication', # Often useful for testing or simple APIs
+        # You might add 'rest_framework.authentication.TokenAuthentication' here later
+        # if you plan to use token-based authentication.
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+        # You might choose 'rest_framework.permissions.AllowAny' for public APIs,
+        # or 'rest_framework.permissions.IsAuthenticatedOrReadOnly' for public read, authenticated write.
+    ],
+    # You can add other global DRF settings here, like renderers, parsers, pagination, etc.
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+# ... (rest of your settings.py) ...
