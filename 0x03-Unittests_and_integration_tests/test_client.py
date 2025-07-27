@@ -126,7 +126,10 @@ class TestGithubOrgClient(unittest.TestCase):
 # "org_payload", "repos_payload", "expected_repos", "apache2_repos"
 integration_test_fixtures = []
 for org_info_part, repos_data in TEST_PAYLOAD:
+    # Extract org_name from the repos_url in org_info_part
+    # This assumes the org_info_part always has a 'repos_url'
     org_name = org_info_part["repos_url"].split('/')[-2]
+    # Create a full org_payload for the test, including 'login'
     full_org_payload = {"login": org_name, **org_info_part}
 
     expected_repos_list = [repo["name"] for repo in repos_data]
@@ -176,4 +179,19 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         Stops the requests.get patcher.
         """
         cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """
+        Tests the public_repos method in an integration context.
+        Verifies that the list of public repositories matches the expected data.
+        """
+        # The org_name is derived from the org_payload in setUpClass
+        # For the current fixture structure, it's the 'login' key
+        # or can be extracted from the 'repos_url' in org_payload
+        # Let's use the 'login' from the org_payload for consistency
+        org_name = self.org_payload.get("login", "google") # Default to 'google' if not found
+
+        client = GithubOrgClient(org_name)
+        repos = client.public_repos()
+        self.assertEqual(repos, self.expected_repos)
 
