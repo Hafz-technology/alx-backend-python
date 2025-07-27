@@ -197,8 +197,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """
-        Tests the public_repos method in an integration context with a license filter.
-        Verifies that the list of public repositories with the specified license
+        Tests the public_repos method in an integration context
+        Verifies that the list of public repositories with the specified
         matches the expected data.
         """
         # The org_name is derived from the org_payload in setUpClass
@@ -207,3 +207,4 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)
         repos = client.public_repos(license="apache-2.0")
         self.assertEqual(repos, self.apache2_repos)
+# OK ( 3 chars long)
