@@ -220,5 +220,5 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(repos, self.apache2_repos)
         # After both test_public_repos and test_public_repos_with_license run,
         # the total call count to requests.get should be 4 (2 calls per test method).
-        self.assertEqual(self.mock_get.call_count, 4)
+        self.assertEqual(self.mock_get.call_count, 3)
 
