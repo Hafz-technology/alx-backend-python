@@ -46,11 +46,12 @@ class TestGithubOrgClient(unittest.TestCase):
         based on a mocked org payload.
         """
         # Define the payload that GithubOrgClient.org should return
-        expected_org_payload = {"repos_url": "https://api.github.com/orgs/test_org/repos"}
+        expected_org_payload = {
+            "repos_url": "https://api.github.com/orgs/test_org/repos"}
 
         # Use patch as a context manager to mock GithubOrgClient.org
-        with patch('client.GithubOrgClient.org', new_callable=Mock) as mock_org:
-            mock_org.return_value = expected_org_payload
+        with patch('client.GithubOrgClient.org', new_callable=Mock) as mock:
+            mock.return_value = expected_org_payload
 
             # Create an instance of GithubOrgClient
             client = GithubOrgClient("test_org")
@@ -82,7 +83,7 @@ class TestGithubOrgClient(unittest.TestCase):
         # Define the URL that _public_repos_url should return
         expected_public_repos_url = "https://api.github.com/orgs/test_org/repos"
 
-        # Use patch as a context manager to mock GithubOrgClient._public_repos_url property
+        # Use patch as a context manager to mock GithubOrgClient.
         with patch('client.GithubOrgClient._public_repos_url',
                    new_callable=PropertyMock) as mock_public_repos_url:
             mock_public_repos_url.return_value = expected_public_repos_url
