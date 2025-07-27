@@ -4,8 +4,9 @@ Unit tests for the client module.
 """
 import unittest
 from unittest.mock import patch, Mock, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -117,4 +118,62 @@ class TestGithubOrgClient(unittest.TestCase):
         """
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected_result)
+
+
+# Prepare the parameters for parameterized_class from TEST_PAYLOAD
+# TEST_PAYLOAD is a list of tuples: (org_info_part, repos_data)
+# We need to transform it into a list of dictionaries with keys:
+# "org_payload", "repos_payload", "expected_repos", "apache2_repos"
+integration_test_fixtures = []
+for org_info_part, repos_data in TEST_PAYLOAD:
+    org_name = org_info_part["repos_url"].split('/')[-2]
+    full_org_payload = {"login": org_name, **org_info_part}
+
+    expected_repos_list = [repo["name"] for repo in repos_data]
+    apache2_repos_list = [
+        repo["name"] for repo in repos_data
+        if repo.get("license", {}).get("key") == "apache-2.0"
+    ]
+
+    integration_test_fixtures.append({
+        "org_payload": full_org_payload,
+        "repos_payload": repos_data,
+        "expected_repos": expected_repos_list,
+        "apache2_repos": apache2_repos_list
+    })
+
+
+@parameterized_class(integration_test_fixtures)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """
+    Integration tests for the GithubOrgClient.public_repos method.
+    This class uses parameterized_class to run tests with different fixtures.
+    """
+    @classmethod
+    def setUpClass(cls):
+        """
+        Sets up the class-level fixtures for integration tests.
+        Mocks requests.get to return predefined payloads.
+        """
+        cls.get_patcher = patch('requests.get')
+        cls.mock_get = cls.get_patcher.start()
+
+        # Configure side_effect for mock_get
+        # The first call to requests.get will be for the org URL
+        # The second call will be for the repos URL
+        mock_org_response = Mock()
+        mock_org_response.json.return_value = cls.org_payload
+
+        mock_repos_response = Mock()
+        mock_repos_response.json.return_value = cls.repos_payload
+
+        cls.mock_get.side_effect = [mock_org_response, mock_repos_response]
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Tears down the class-level fixtures after integration tests.
+        Stops the requests.get patcher.
+        """
+        cls.get_patcher.stop()
 
