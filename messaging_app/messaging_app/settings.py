@@ -135,5 +135,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-
+# Specify the custom user model
+AUTH_USER_MODEL = 'chats.User'
 
