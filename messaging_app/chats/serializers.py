@@ -59,6 +59,8 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = ('sent_at',)
 
 
+# chats/serializers.py doesn't contain: ["serializers.CharField", "serializers.SerializerMethodField()", "serializers.ValidationError"]
+
 class ConversationSerializer(serializers.ModelSerializer):
     """
     Serializer for the Conversation model.
