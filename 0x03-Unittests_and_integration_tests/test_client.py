@@ -49,7 +49,7 @@ class TestGithubOrgClient(unittest.TestCase):
         correct URL based on the mocked `org` property.
         """
         # Define a known payload for the `org` property
-        known_payload = {"repos_url": "https://api.github.com/orgs/google/repos"}
+        known_payload ={"repos_url":"https://api.github.com/orgs/google/repos"}
 
         # Patch the `org` property using patch.object and PropertyMock
         with patch.object(GithubOrgClient,
