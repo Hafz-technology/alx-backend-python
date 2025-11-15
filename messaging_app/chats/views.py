@@ -1,7 +1,4 @@
-from django.shortcuts import render
-
-
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from .models import Conversation, Message
@@ -77,3 +74,4 @@ class MessageViewSet(viewsets.ModelViewSet):
         
         # Set the sender and save the message
         serializer.save(sender=user)
+    
