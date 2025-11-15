@@ -21,3 +21,5 @@ urlpatterns = [
     path('api/v1/chats/', include('chats.urls')),
     path('admin/', admin.site.urls),
 ]
+
+# messaging_app/urls.py doesn't contain: ["api-auth"]
