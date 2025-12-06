@@ -58,4 +58,4 @@ def reply_to_message(request, message_id):
     return render(request, 'messaging/reply.html', {'parent_message': parent_message})
 
 
-
+# unread_messages = Message.unread.unread_for_user(request.user)
