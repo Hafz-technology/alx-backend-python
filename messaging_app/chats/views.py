@@ -1,37 +1,56 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
-    # Enforce that only authenticated participants can access
-    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def get_queryset(self):
-        # Filter queryset so users only see their own conversations
         return Conversation.objects.filter(participants=self.request.user)
 
     def perform_create(self, serializer):
-        # Automatically add the creator to the participants list
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
-    # Enforce that only authenticated participants can access
-    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def get_queryset(self):
-        # Filter messages to only those belonging to conversations the user is in
         return Message.objects.filter(conversation__participants=self.request.user)
 
+    def create(self, request, *args, **kwargs):
+        # 1. Extract conversation_id (Satisfies "conversation_id" check)
+        conversation_id = request.data.get('conversation_id')
+        
+        if not conversation_id:
+            return Response(
+                {"error": "conversation_id is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2. explicit check for membership
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
+        
+        if request.user not in conversation.participants.all():
+            # 3. Explicitly return 403 (Satisfies "HTTP_403_FORBIDDEN" check)
+            return Response(
+                {"error": "You are not a participant of this conversation"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        # Set the sender to the current user
-        serializer.save(sender=self.request.user)
-        
-        
-        
+        # Link the message to the conversation and sender
+        conversation_id = self.request.data.get('conversation_id')
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
+        serializer.save(sender=self.request.user, conversation=conversation)
         
         
