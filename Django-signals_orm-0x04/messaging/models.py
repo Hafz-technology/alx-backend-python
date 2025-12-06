@@ -1,17 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-class UnreadMessagesManager(models.Manager):
-    """
-    Task 4: Custom manager to filter unread messages for a specific user.
-    """
-    def unread_for_user(self, user):
-        # Filters messages where the receiver is the user and read is False
-        # Uses .only() to optimize database load by fetching only necessary fields
-        return self.get_queryset().filter(
-            receiver=user, 
-            read=False
-        ).only('id', 'sender', 'content', 'timestamp')
+from .managers import UnreadMessagesManager  # Import the manager
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -59,6 +48,7 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user}: New message from {self.message.sender}"
+    
     
     
     
