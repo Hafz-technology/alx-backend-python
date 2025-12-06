@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'chats.middleware.RestrictAccessByTimeMiddleware', # Then checks the time
     
     'chats.middleware.OffensiveLanguageMiddleware',
+    'chats.middleware.RolepermissionMiddleware',
 
 ]
 

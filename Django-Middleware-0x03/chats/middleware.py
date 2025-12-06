@@ -1,6 +1,10 @@
 import logging
 from datetime import datetime
 
+import time
+
+from django.http import JsonResponse
+
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -80,4 +84,31 @@ class OffensiveLanguageMiddleware:
         return response
     
 
+class RolepermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # We generally only check permissions for authenticated users
+        # and usually exclude the admin site itself to prevent locking yourself out
+        if request.path.startswith('/admin/'):
+             return self.get_response(request)
+
+        if request.user.is_authenticated:
+            # Get the user role (default to empty string if not set)
+            role = getattr(request.user, 'role', '').lower()
+            
+            # Allow only 'admin' or 'moderator'
+            if role not in ['admin', 'moderator']:
+                return JsonResponse(
+                    {'error': 'Forbidden: Access denied. Requires Admin or Moderator role.'}, 
+                    status=403
+                )
+        
+        # Note: Depending on requirements, you might also want to block 
+        # unauthenticated users here, or leave that to the View permissions.
+        
+        response = self.get_response(request)
+        return response
+    
     
