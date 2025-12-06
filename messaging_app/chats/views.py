@@ -1,30 +1,34 @@
-from django.shortcuts import render
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from .models import Conversation, Message, User
+from rest_framework import viewsets, filters
+from rest_framework.permissions import IsAuthenticated
+from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
-
-# Create your views here.
+from .permissions import IsParticipantOfConversation 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
-    # Optional: Override create to handle adding participants
-    def create(self, request, *args, **kwargs):
-        # Implementation depends on how you want to pass participant IDs
-        return super().create(request, *args, **kwargs)
-
-class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
+    def get_queryset(self):
+        # Restrict the list of conversations to only those the user is part of
+        return Conversation.objects.filter(participants=self.request.user)
 
     def perform_create(self, serializer):
-        # Automatically set the sender to the current user if logged in
-        # For this exercise, we might need to pass sender_id manually in body
-        # depending on auth setup. Here is the standard way:
+        # Automatically add the current user to the conversation participants
+        conversation = serializer.save()
+        conversation.participants.add(self.request.user)
+
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+
+    def get_queryset(self):
+        # Restrict messages to conversations the user is part of
+        return Message.objects.filter(conversation__participants=self.request.user)
+
+    def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
         
         
         
-    
+        
+        
