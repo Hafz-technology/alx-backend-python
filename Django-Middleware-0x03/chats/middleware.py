@@ -44,3 +44,40 @@ class RestrictAccessByTimeMiddleware:
         return response
     
     
+    
+class OffensiveLanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # Dictionary to store IP request history: {'127.0.0.1': [timestamp1, timestamp2]}
+        self.ip_requests = {}
+
+    def __call__(self, request):
+        # We only limit POST requests (sending messages)
+        if request.method == 'POST':
+            # Get IP address
+            ip = request.META.get('REMOTE_ADDR')
+            current_time = time.time()
+            
+            # Initialize list for this IP if not exists
+            if ip not in self.ip_requests:
+                self.ip_requests[ip] = []
+
+            # Filter out timestamps older than 60 seconds (1 minute window)
+            # We keep only requests made in the last 60 seconds
+            self.ip_requests[ip] = [t for t in self.ip_requests[ip] if current_time - t < 60]
+
+            # Check if count exceeds limit (5 requests per minute)
+            if len(self.ip_requests[ip]) >= 5:
+                return JsonResponse(
+                    {'error': 'Rate limit exceeded. You can only send 5 messages per minute.'}, 
+                    status=429 # HTTP 429 Too Many Requests
+                )
+
+            # Add current timestamp to history
+            self.ip_requests[ip].append(current_time)
+
+        response = self.get_response(request)
+        return response
+    
+
+    

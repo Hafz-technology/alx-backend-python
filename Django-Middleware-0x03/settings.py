@@ -60,6 +60,9 @@ MIDDLEWARE = [
     # ...
     'chats.middleware.RequestLoggingMiddleware',       # Logs the request
     'chats.middleware.RestrictAccessByTimeMiddleware', # Then checks the time
+    
+    'chats.middleware.OffensiveLanguageMiddleware',
+
 ]
 
 ROOT_URLCONF = 'messaging_app.urls'

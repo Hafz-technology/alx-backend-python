@@ -9,3 +9,10 @@ D:\git_repos\alx-backend-python\Django-Middleware-0x03\chats\urls.py changed, re
 D:\git_repos\alx-backend-python\Django-Middleware-0x03\messaging_app\settings.py changed, reloading.
 2025-12-06 12:34:43.203403 - User: AnonymousUser - Path: /
 Not Found: /
+2025-12-06 12:39:24.046080 - User: AnonymousUser - Path: /
+2025-12-06 12:39:24.046263 - User: AnonymousUser - Path: /
+Not Found: /
+2025-12-06 12:39:24.179099 - User: AnonymousUser - Path: /favicon.ico
+2025-12-06 12:39:24.179263 - User: AnonymousUser - Path: /favicon.ico
+Not Found: /favicon.ico
+D:\git_repos\alx-backend-python\Django-Middleware-0x03\chats\middleware.py changed, reloading.
