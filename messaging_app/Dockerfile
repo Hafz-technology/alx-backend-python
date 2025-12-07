@@ -2,6 +2,7 @@ FROM python:3.10-slim-buster
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# -p
 
 WORKDIR /app
 COPY requirements.txt /app/
