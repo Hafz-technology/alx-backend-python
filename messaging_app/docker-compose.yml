@@ -5,9 +5,9 @@ services:
     image: mysql:8.0
     container_name: messaging_mysql
     environment:
-      # Passes the variables from your .env file to the container
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      # Maps the .env variable MYSQL_DB to the container's expected MYSQL_DATABASE
+      MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
