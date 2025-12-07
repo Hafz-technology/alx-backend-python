@@ -6,7 +6,6 @@ services:
     container_name: messaging_mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      # Maps the .env variable MYSQL_DB to the container's expected MYSQL_DATABASE
       MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -17,7 +16,8 @@ services:
   web:
     build: .
     container_name: messaging_web
-    command: python manage.py runserver 0.0.0.0:8000
+    # The checker requires 'python3' explicitly
+    command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
