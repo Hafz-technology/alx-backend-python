@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# --- Minikube Cluster Setup and Verification Script ---
+
+# 1. Ensure minikube is installed (Prerequisite Check)
+# The 'minikube start' command implicitly checks for minikube. 
+# We'll explicitly check for the binary and exit if not found for a clean start.
+
+if ! command -v minikube &> /dev/null
+then
+    echo "🚨 minikube could not be found."
+    echo "Please install minikube first. Visit https://minikube.sigs.k8s.io/docs/start/"
+    exit 1
+fi
+
+echo "✅ minikube is installed."
+
+# 2. Start a Kubernetes cluster on your machine
+echo -e "\n🚀 Starting Kubernetes cluster with minikube..."
+# We use a common driver like 'docker' for this example, or you can omit the --driver flag 
+# and let minikube choose the best one (which might be 'docker' or 'podman' if installed).
+# Note: minikube start will download the necessary components if it's the first run.
+minikube start 
+
+# Check the exit status of the previous command
+if [ $? -ne 0 ]; then
+    echo "❌ minikube cluster failed to start. Exiting."
+    exit 1
+fi
+
+echo -e "\n✅ minikube cluster started successfully."
+
+# 3. Verify that the cluster is running using kubectl cluster-info
+echo -e "\n🔍 Verifying cluster status with kubectl cluster-info..."
+# minikube automatically configures kubectl for the new cluster.
+kubectl cluster-info
+
+# 4. Retrieve the available pods
+echo -e "\n📋 Retrieving all available pods (including system pods) in all namespaces..."
+# The -A or --all-namespaces flag is crucial to see all necessary cluster pods (like CoreDNS)
+kubectl get pods --all-namespaces
+
+echo -e "\n🎉 Script finished."
+
+
