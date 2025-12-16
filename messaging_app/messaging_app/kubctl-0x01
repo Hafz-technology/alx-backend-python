@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+# File: messaging_app/kubctl-0x01
+# Objective: Scale the Django app deployment, verify scaling, and outline monitoring/load testing.
+
+DEPLOYMENT_NAME="django-messaging-app-deployment"
+SERVICE_NAME="django-messaging-app-service"
+TARGET_REPLICAS=3
+
+echo "--- 1. Scaling the Deployment ---"
+echo "Scaling deployment '$DEPLOYMENT_NAME' to $TARGET_REPLICAS replicas..."
+
+# Use kubectl scale to increase the number of replicas
+kubectl scale deployment/$DEPLOYMENT_NAME --replicas=$TARGET_REPLICAS
+
+# Check the exit status of the scale command
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to scale deployment. Ensure the deployment name is correct and the cluster is running."
+    exit 1
+fi
+
+echo "Scaling initiated. Waiting for pods to become ready..."
+
+# Wait for the desired number of replicas to be available
+kubectl wait --for=condition=Available deployment/$DEPLOYMENT_NAME --timeout=90s
+if [ $? -ne 0 ]; then
+    echo "WARNING: Deployment did not reach desired availability within 90 seconds. Proceeding to verification."
+fi
+
+echo ""
+echo "--- 2. Verifying Multiple Pods are Running ---"
+
+# Verify that multiple pods are running by using kubectl get pods
+kubectl get pods -l app=django-messaging-app
+
+# Display the current desired and ready replicas
+kubectl get deployment/$DEPLOYMENT_NAME
+
+echo ""
+echo "--- 3. Load Testing Preparation (using wrk) ---"
+echo "To effectively perform load testing with 'wrk', you need to access the cluster externally."
+echo "If you are using minikube, you can get the external URL using 'minikube service --url $SERVICE_NAME'."
+echo "Assuming 'minikube tunnel' or a similar mechanism is running, perform the following steps:"
+
+# Retrieve the service URL for testing
+SERVICE_URL=$(minikube service --url $SERVICE_NAME 2>/dev/null)
+
+if [ -n "$SERVICE_URL" ]; then
+    echo "Service URL (via minikube): $SERVICE_URL"
+    echo "Run the following command manually to perform a 30-second load test on the service (requires 'wrk' to be installed):"
+    echo "  wrk -t4 -c100 -d30s $SERVICE_URL"
+else
+    echo "Could not automatically determine the service URL. If using minikube, ensure 'minikube tunnel' is running."
+    echo "Example command for manual testing (replace the IP:Port with your actual access point):"
+    echo "  wrk -t4 -c100 -d30s http://<Cluster_IP_or_Node_Port>"
+fi
+
+
+echo ""
+echo "--- 4. Monitoring Resource Usage (kubectl top) ---"
+echo "Monitoring resource usage requires the Kubernetes Metrics Server to be installed and running."
+echo "If you are using minikube, ensure the 'metrics-server' addon is enabled: 'minikube addons enable metrics-server'"
+echo "Run the following commands manually to monitor CPU/Memory usage (may take a moment for metrics to appear):"
+
+echo "a) Monitor all pods:"
+echo "  kubectl top pod --all-namespaces"
+
+echo "b) Monitor specific application pods:"
+echo "  kubectl top pod -l app=django-messaging-app"
+
+echo "c) Monitor cluster nodes:"
+echo "  kubectl top node"
+
+echo "--- Script Execution Complete ---"
+
+
