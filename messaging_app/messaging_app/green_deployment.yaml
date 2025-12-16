@@ -1,0 +1,31 @@
+# green_deployment.yaml
+# Represents the new version of the app being tested (GREEN)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-green-deployment
+  labels:
+    app: django-messaging-app
+    version: green # Unique label for the new version
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-messaging-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: django-messaging-app
+        version: green
+    spec:
+      containers:
+      - name: django-messaging-app-container
+        # Use the new image tag (v2.0.0 or latest)
+        image: your-dockerhub-username/messaging-app:v2.0.0 
+        ports:
+        - containerPort: 8000
+
+
+        

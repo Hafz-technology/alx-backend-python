@@ -1,0 +1,31 @@
+# blue_deployment.yaml
+# Represents the current, stable version of the app (BLUE)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-blue-deployment
+  labels:
+    app: django-messaging-app
+    version: blue # Unique label for the stable version
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-messaging-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: django-messaging-app
+        version: blue
+    spec:
+      containers:
+      - name: django-messaging-app-container
+        # Use the current stable image tag
+        image: your-dockerhub-username/messaging-app:v1.0.0 
+        ports:
+        - containerPort: 8000
+
+
+        

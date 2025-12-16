@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# File: messaging_app/kubctl-0x02
+# Objective: Deploy Blue and Green versions and verify the Green version.
+
+BLUE_DEPLOYMENT="django-app-blue-deployment"
+GREEN_DEPLOYMENT="django-app-green-deployment"
+ROUTER_SERVICE="django-messaging-app-router-service"
+
+echo "--- 1. Deploying the Router Service (kubeservice.yaml) ---"
+# This creates the stable entry point for traffic, initially pointing to BLUE.
+kubectl apply -f messaging_app/kubeservice.yaml
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Service deployment failed."
+    exit 1
+fi
+
+echo "--- 2. Deploying the BLUE (Current) Version ---"
+# Ensure the current version is running
+kubectl apply -f messaging_app/blue_deployment.yaml
+
+echo "Waiting for BLUE deployment to be ready..."
+kubectl wait --for=condition=Available deployment/$BLUE_DEPLOYMENT --timeout=120s
+
+echo "--- 3. Deploying the GREEN (New) Version ---"
+# Deploy the new version in parallel
+kubectl apply -f messaging_app/green_deployment.yaml
+
+echo "Waiting for GREEN deployment to be ready..."
+kubectl wait --for=condition=Available deployment/$GREEN_DEPLOYMENT --timeout=120s
+
+echo "--- 4. Verification and Logs Check for GREEN Version ---"
+
+# Retrieve the name of a running GREEN pod
+GREEN_POD_NAME=$(kubectl get pods -l app=django-messaging-app,version=green -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+if [ -z "$GREEN_POD_NAME" ]; then
+    echo "ERROR: Could not find a running GREEN pod. Check image name/tag."
+    kubectl get pods -l app=django-messaging-app
+    exit 1
+fi
+
+echo "Checking logs for the new GREEN pod ($GREEN_POD_NAME) for errors..."
+# Use kubectl logs to check for errors in the new version
+kubectl logs $GREEN_POD_NAME
+
+echo ""
+echo "--- 5. Deployment Summary ---"
+echo "Deployments Status:"
+kubectl get deployments -l app=django-messaging-app
+
+echo ""
+echo "Service Status (Router points to: $(kubectl get svc $ROUTER_SERVICE -o jsonpath='{.spec.selector.version}')):"
+kubectl get svc $ROUTER_SERVICE
+
+echo "--------------------------------------------------------"
+echo "ACTION REQUIRED: The GREEN version is now ready and tested."
+echo "To switch traffic (Blue-Green Switch), modify the 'version' selector in 'kubeservice.yaml' from 'blue' to 'green', and re-run:"
+echo "  kubectl apply -f messaging_app/kubeservice.yaml"
+echo "--------------------------------------------------------"
+
+
