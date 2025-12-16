@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+# File: messaging_app/kubctl-0x03
+# Objective: Trigger and monitor a Kubernetes Rolling Update while continuously testing for downtime.
+
+DEPLOYMENT_NAME="django-app-blue-deployment"
+ROUTER_SERVICE="django-messaging-app-router-service"
+# IMPORTANT: This command gets the external IP needed for curl testing.
+SERVICE_IP_PORT=$(minikube service --url $ROUTER_SERVICE 2>/dev/null)
+
+if [ -z "$SERVICE_IP_PORT" ]; then
+    echo "ERROR: Could not get the Service URL for testing."
+    echo "Ensure 'minikube tunnel' is running and the service '$ROUTER_SERVICE' exists."
+    exit 1
+fi
+
+echo "--- 1. Continuous Uptime Test (Running in Background) ---"
+echo "Testing service at: $SERVICE_IP_PORT"
+
+# Run a continuous curl loop in the background to check for downtime
+(
+    ATTEMPTS=0
+    FAILURES=0
+    while true; do
+        ATTEMPTS=$((ATTEMPTS + 1))
+        # Use a simple curl to check the service health
+        RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_IP_PORT)
+
+        if [ "$RESPONSE_CODE" -eq 200 ] || [ "$RESPONSE_CODE" -eq 301 ] || [ "$RESPONSE_CODE" -eq 302 ]; then
+            echo -n "." # Success marker
+        else
+            FAILURES=$((FAILURES + 1))
+            echo -e "\n[FAIL] Request failed with code $RESPONSE_CODE at attempt $ATTEMPTS!"
+        fi
+
+        # Exit if failure threshold is reached
+        if [ $FAILURES -gt 5 ]; then
+            echo -e "\nTOO MANY FAILURES. Stopping test."
+            exit 1
+        fi
+        sleep 0.2
+    done
+) &
+CURL_PID=$!
+echo "Continuous test started (PID: $CURL_PID). Looking for a string of dots (successes)..."
+
+# Give the test a moment to stabilize
+sleep 1
+
+echo ""
+echo "--- 2. Applying the Updated Deployment and Triggering Rollout ---"
+echo "Applying updated '$DEPLOYMENT_NAME' with new image version (v2.0.0)..."
+
+# Applies the updated deployment file and triggers a rolling update
+kubectl apply -f messaging_app/blue_deployment.yaml
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Deployment application failed."
+    kill $CURL_PID # Stop background test
+    exit 1
+fi
+
+echo ""
+echo "--- 3. Monitoring the Update Progress (kubectl rollout status) ---"
+
+# Monitors the update progress using kubectl rollout status
+# This command blocks until the rollout is complete or fails
+kubectl rollout status deployment/$DEPLOYMENT_NAME
+
+ROLLOUT_STATUS=$?
+
+echo ""
+if [ $ROLLOUT_STATUS -eq 0 ]; then
+    echo "✅ ROLLOUT SUCCESSFUL!"
+else
+    echo "❌ ROLLOUT FAILED. Check logs and deployment history."
+fi
+
+# Stop the background curl test
+kill $CURL_PID
+wait $CURL_PID 2>/dev/null # Suppress "Terminated" message
+
+echo ""
+echo "--- 4. Verify the Rolling Update is Complete by checking the current pods ---"
+echo "Checking pod status (should show new age and all pods running):"
+kubectl get pods -l app=django-messaging-app,version=blue
+
+echo ""
+echo "Summary of Continuous Test:"
+echo "If you saw only dots ('.') and no '[FAIL]' messages above, the update was completed with zero downtime."
+echo "If you saw '[FAIL]' messages, there was a service disruption during the rollout."
+
+echo "--- Script Execution Complete ---"
+
+
