@@ -1,0 +1,20 @@
+# kubeservice.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-messaging-app-router-service # Router name remains constant
+spec:
+  # Initial selector points to the stable BLUE version
+  selector:
+    app: django-messaging-app
+    version: blue # *** CHANGE THIS TO 'green' TO SWITCH TRAFFIC ***
+  type: LoadBalancer # Use LoadBalancer or NodePort to expose it externally
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+
+
+
+      
