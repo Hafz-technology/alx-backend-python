@@ -1,0 +1,59 @@
+# deployment.yaml
+
+# 1. Deployment Object
+# Manages the replica set and defines the desired state for your pods.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-messaging-app-deployment
+  labels:
+    app: django-messaging-app
+spec:
+  # The number of desired replicas (pods)
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-messaging-app
+  template:
+    metadata:
+      labels:
+        app: django-messaging-app
+    spec:
+      containers:
+      - name: django-messaging-app-container
+        # Define the Docker image to be used for the app
+        # REPLACE 'your-dockerhub-username/messaging-app:latest' 
+        # with the actual name and tag of your containerized Django app image.
+        image: your-dockerhub-username/messaging-app:latest
+        ports:
+        - containerPort: 8000
+        # Optional: Add environment variables for Django settings if needed
+        # env:
+        # - name: DJANGO_ALLOWED_HOSTS
+        #   value: "*"
+        # - name: DATABASE_URL
+        #   value: "..." # If you have a separate database service
+---
+# 2. Service Object
+# Exposes the pods internally within the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-messaging-app-service
+spec:
+  # Use ClusterIP to keep the service internal, accessible only from within the cluster.
+  type: ClusterIP
+  # Selector links this service to the pods created by the Deployment 
+  # based on the 'app: django-messaging-app' label.
+  selector:
+    app: django-messaging-app
+  ports:
+    # Port on which the Service listens (internal to the cluster)
+    - port: 80
+      # Port to which the Service forwards traffic on the container (where Django runs)
+      targetPort: 8000
+      protocol: TCP
+
+
+
+      
