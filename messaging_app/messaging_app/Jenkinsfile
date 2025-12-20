@@ -25,3 +25,18 @@ pipeline {
 
 
 // messaging_app/Jenkinsfile doesn't contain: ["pip3 install"]
+
+
+stage('Build & Push Docker Image') {
+    steps {
+        script {
+            docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-creds') {
+                def appImage = docker.build("your-dockerhub-user/messaging-app:${env.BUILD_ID}")
+                appImage.push()
+                appImage.push('latest')
+            }
+        }
+    }
+}
+
+
