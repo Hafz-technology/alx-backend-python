@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/your-username/alx-backend-python.git'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Using ShiningPanda or standard shell if python is in the image
+                sh '''
+                pip install -r messaging_app/requirements.txt
+                cd messaging_app && pytest --junitxml=reports/result.xml
+                '''
+            }
+        }
+    }
+    post {
+        always {
+            junit 'messaging_app/reports/*.xml'
+        }
+    }
+}
+
+
+
