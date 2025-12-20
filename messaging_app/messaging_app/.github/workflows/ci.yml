@@ -29,9 +29,21 @@ jobs:
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/messaging_db
         run: |
           cd messaging_app && pytest
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 messaging_app --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 messaging_app --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Coverage Report
+        run: |
+          pip install coverage
+          cd messaging_app && coverage run -m pytest && coverage xml
+      
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: messaging_app/coverage.xml
 
 
-
-
-
-          
